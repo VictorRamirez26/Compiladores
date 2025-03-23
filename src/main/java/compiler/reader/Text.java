@@ -61,6 +61,10 @@ public class Text {
         this.lineIndex = lineIndex;
     }
 
+    public Character nextCharacter() {
+        return null;
+    }
+
     @Override
     public String toString() {
         return "TextLine{" +

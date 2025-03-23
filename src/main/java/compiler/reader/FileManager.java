@@ -61,10 +61,10 @@ public class FileManager {
      * @throws IOException Si ocurre un error durante la verificación de las líneas.
      */
     public boolean hasMoreLines() throws IOException {
-        if (!reader.ready()) {
-            reader.close();
-            return false;
-        }
-        return true;
+        return reader.ready();
+    }
+
+    public void closeFile() throws IOException {
+        reader.close();
     }
 }
