@@ -21,73 +21,36 @@ public class TokenClassifier {
         keywords.put("new", TokenType.KW_NEW);
         keywords.put("nil", TokenType.KW_NIL);
         keywords.put("st", TokenType.KW_ST);
+        keywords.put("start", TokenType.KW_START);
         keywords.put("self", TokenType.KW_SELF);
         keywords.put("pub", TokenType.KW_PUB);
         keywords.put("div", TokenType.KW_DIV);
     }
 
-    /*private void initSpecialSymbols {
-        //specialSymbols.put("{", TokenType.)
-    }*/
+    private void initSpecialSymbols() {
+        specialSymbols.put("{", TokenType.SPECIAL_SYMBOL_LCB);
+        specialSymbols.put("}", TokenType.SPECIAL_SYMBOL_RCB);
+        specialSymbols.put("(", TokenType.SPECIAL_SYMBOL_PO);
+        specialSymbols.put(")", TokenType.SPECIAL_SYMBOL_PC);
+        specialSymbols.put("/", TokenType.SPECIAL_SYMBOL_SCO);
+        specialSymbols.put("//", TokenType.SPECIAL_SYMBOL_SCO);
+        specialSymbols.put("/*", TokenType.SPECIAL_SYMBOL_MCO);
+        specialSymbols.put("*/", TokenType.SPECIAL_SYMBOL_MCC);
+        specialSymbols.put(";", TokenType.SPECIAL_SYMBOL_S);
+        specialSymbols.put(",", TokenType.SPECIAL_SYMBOL_C);
+        specialSymbols.put(".", TokenType.SPECIAL_SYMBOL_P);
+    }
 
     public TokenClassifier() {
         initKeywords();
+        initSpecialSymbols();
     }
 
-    public Token classifyToken(Lexeme lexeme){
-
-        String data = lexeme.getData();
-
-        if (data.isEmpty()){
-            return null;
-        }
-
-        char c = data.charAt(0);
-
-        if (Character.isLowerCase(c)) {
-            return classifyKeywordOrIdentifier(lexeme);
-        } else if (Character.isUpperCase(c)) {
-            return classifyClassIdentifier(lexeme);
-        } else if (Character.isDigit(c)) {
-            return classifyIntOrDouble(lexeme);
-        }
-
-        return null;
+    public Map<String, TokenType> getKeywords() {
+        return keywords;
     }
 
-    private Token classifyIntOrDouble(Lexeme lexeme){
-        Token token = setValues(new Token() , lexeme);
-        token.setTokenType(TokenType.INT_CONSTANT); // Por default es INT
-        String data = lexeme.getData();
-        int size = data.length();
-
-        for (int i=0 ; i < size; i++){
-            if (i+1 < size) {
-                if (data.charAt(i) == '.' && Character.isDigit(data.charAt(i+1))) { // Pasa a ser DOUBLE
-                    token.setTokenType(TokenType.DOUBLE_CONSTANT);
-                    break;
-                }
-            }
-        }
-
-        return token;
+    public Map<String, TokenType> getSpecialSymbols() {
+        return specialSymbols;
     }
-    private Token classifyClassIdentifier(Lexeme lexeme){
-        Token token = setValues(new Token() , lexeme);
-        token.setTokenType(TokenType.IDENTIFIER_CLASS);
-        return token;
-    }
-    private Token classifyKeywordOrIdentifier(Lexeme lexeme){
-        Token token = setValues(new Token() , lexeme);
-        token.setTokenType(keywords.getOrDefault(lexeme.getData(), TokenType.IDENTIFIER_OBJECT));
-        return token;
-    }
-
-    private Token setValues(Token token, Lexeme lexeme){
-        token.setValue(lexeme.getData());
-        token.setLine(lexeme.getLineIndex());
-        token.setColumn(lexeme.getColumnIndex());
-        return token;
-    }
-
 }

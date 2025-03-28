@@ -14,6 +14,7 @@ public enum TokenType {
     KW_NEW,
     KW_NIL,
     KW_ST,
+    KW_START,
     KW_SELF,
     KW_PUB,
     KW_DIV,

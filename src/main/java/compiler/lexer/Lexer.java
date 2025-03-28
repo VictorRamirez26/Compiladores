@@ -5,6 +5,7 @@ import compiler.reader.Text;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * La clase {@code Lexer} es responsable de analizar y extraer lexemas del archivo de entrada.
@@ -39,15 +40,18 @@ public class Lexer {
      */
     private int currentColumn;
 
+    private TokenClassifier tokenClassifier;
+
     /**
      * Constructor que inicializa el objeto {@code Lexer} y configura la lectura del archivo fuente.
      *
      * @throws FileNotFoundException Si no se encuentra el archivo.
      */
-    public Lexer() throws FileNotFoundException {
+    public Lexer(FileManager fileManager) throws FileNotFoundException {
         this.currentPosition = 0;
         this.currentColumn = 0; // Empezamos desde la columna 0
-        reader = new FileManager("C:\\Users\\joaqu\\OneDrive\\Facultad\\Cuarto año\\Séptimo semestre\\Compiladores\\Compilador\\prueba.txt");
+        this.reader = fileManager;
+        this.tokenClassifier = new TokenClassifier();
     }
 
     /**
@@ -59,20 +63,23 @@ public class Lexer {
      *
      * @author Joaquin Ruiz
      */
-    public Lexeme extractLexeme() throws IOException {
+    public Token getToken() throws IOException {
+
+
         // Este ciclo seguirá hasta que no haya más líneas
         while (reader.hasMoreLines() || currentData != null) {
             // Si hay una línea actual y aún quedan caracteres por procesar
             if (currentData != null && currentPosition < currentData.length()) {
                 // Saltar espacios en blanco en la línea actual
+
+                if (Character.isLowerCase(currentData.charAt(currentPosition))){
+                    return classifyKeywordOrIdentifier();
+                }
+
                 while (currentPosition < currentData.length() &&
                         Character.isWhitespace(currentData.charAt(currentPosition))) {
                     currentPosition++;
                     currentColumn++;
-                }
-                // Si después de saltar espacios aún quedan caracteres, procesamos el lexema
-                if (currentPosition < currentData.length()) {
-                    return processLexeme();
                 }
             }
 
@@ -95,7 +102,46 @@ public class Lexer {
         return null;
     }
 
+    private Token classifyKeywordOrIdentifier(){
 
+        StringBuffer buffer = new StringBuffer();
+
+        if (Character.isLowerCase(currentData.charAt(currentPosition))) {
+            char vistazo;
+            do {
+
+                buffer.append(currentData.charAt(currentPosition));
+                ++currentPosition;
+
+                if (currentPosition < currentData.length()){
+                    vistazo = currentData.charAt(currentPosition);
+                }else {
+                    vistazo = ' ';
+                }
+
+            }while (Character.isLetterOrDigit(vistazo));
+
+            String palabra = buffer.toString();
+            Optional<TokenType> tokenType = Optional.ofNullable(tokenClassifier.getKeywords().get(palabra));
+            Token token = new Token();
+
+            if (tokenType.isPresent()){
+                token.setTokenType(tokenType.get());
+            }else {
+                token.setTokenType(TokenType.IDENTIFIER_OBJECT);
+            }
+
+            Lexeme lexeme = new Lexeme();
+            lexeme.setData(palabra);
+            lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
+            lexeme.setLineIndex(textLine.getLineIndex());
+
+            token.setLexeme(lexeme);
+            return token;
+        }
+
+        return null;
+    }
 
     /**
      * Procesa un lexema simple, que es cualquier secuencia de caracteres no blanca en la línea actual.
