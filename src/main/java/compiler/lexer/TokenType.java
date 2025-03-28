@@ -24,8 +24,20 @@ public enum TokenType {
 
     INT_CONSTANT,
     DOUBLE_CONSTANT,
-    OPERATOR,
-    SPECIAL_SYMBOL,
     STRING_CONSTANT,
-    BOOLEAN
+    BOOLEAN,
+
+    SPECIAL_SYMBOL_LCB, //Left curly brace {
+    SPECIAL_SYMBOL_RCB, //Right curly brace }
+    SPECIAL_SYMBOL_PO, //Parenthesis open (
+    SPECIAL_SYMBOL_PC, //Parenthesis close )
+    SPECIAL_SYMBOL_SCO, //Simple comment open //
+    SPECIAL_SYMBOL_MCO, //Multiple comment open /*
+    SPECIAL_SYMBOL_MCC, //Multiple comment close */
+    SPECIAL_SYMBOL_S, //Semicolon ;
+    SPECIAL_SYMBOL_C, //Comma ,
+    SPECIAL_SYMBOL_P, //Period .
+
+    OPERATOR_E, //Equals =
+    OPERATOR_EC, //Equals comparator ==
 }

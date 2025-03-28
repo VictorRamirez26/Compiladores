@@ -6,6 +6,7 @@ import java.util.Map;
 public class TokenClassifier {
 
     private final Map<String, TokenType> keywords = new HashMap<>();
+    private final Map<String, TokenType> specialSymbols = new HashMap<>();
 
     private void initKeywords() {
         keywords.put("class", TokenType.KW_CLASS);
@@ -24,6 +25,10 @@ public class TokenClassifier {
         keywords.put("pub", TokenType.KW_PUB);
         keywords.put("div", TokenType.KW_DIV);
     }
+
+    /*private void initSpecialSymbols {
+        //specialSymbols.put("{", TokenType.)
+    }*/
 
     public TokenClassifier() {
         initKeywords();
