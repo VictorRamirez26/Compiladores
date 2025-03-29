@@ -6,6 +6,7 @@ import compiler.reader.Text;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * La clase {@code Lexer} es responsable de analizar y extraer lexemas del archivo de entrada.
@@ -35,6 +36,10 @@ public class Lexer {
      */
     private String currentData;
 
+    private static final Set<Character> SPECIAL_SYMBOLS = Set.of(
+            '+', '-', '*', '/', '=', '<', '>', '{', '}', '(', ')', ';', ','
+    );
+
     private TokenClassifier tokenClassifier;
 
     /**
@@ -59,20 +64,22 @@ public class Lexer {
      */
     public Token getToken() throws IOException {
 
-
         // Este ciclo seguirá hasta que no haya más líneas
         while (reader.hasMoreLines() || currentData != null) {
             // Si hay una línea actual y aún quedan caracteres por procesar
             if (currentData != null && currentPosition < currentData.length()) {
                 while (currentPosition < currentData.length()) {
                     // Saltar espacios en blanco en la línea actual
-                    if(Character.isWhitespace(currentData.charAt(currentPosition))){
+                    if (Character.isWhitespace(currentData.charAt(currentPosition))) {
                         currentPosition++;
-                    }
-                    if (Character.isLowerCase(currentData.charAt(currentPosition))){
+                    } else if (Character.isLowerCase(currentData.charAt(currentPosition))) {
                         return classifyKeywordOrIdentifier();
+                    } else if (SPECIAL_SYMBOLS.contains(currentData.charAt(currentPosition))) {
+                        return classifySpecialSymbol();
+                        
+                    } else {
+                        throw new RuntimeException("No se reconoce el símbolo: " + currentData.charAt(currentPosition));
                     }
-
                 }
             }
 
@@ -93,6 +100,7 @@ public class Lexer {
         // Si no hay más lexemas, devolvemos null
         return null;
     }
+
 
     private Token classifyKeywordOrIdentifier(){
 
@@ -133,6 +141,52 @@ public class Lexer {
         }
 
         return null;
+    }
+
+    private Token classifySpecialSymbol() {
+
+        StringBuffer buffer = new StringBuffer();
+
+        if (SPECIAL_SYMBOLS.contains(currentData.charAt(currentPosition))) {
+            char vistazo;
+            do {
+
+                buffer.append(currentData.charAt(currentPosition));
+                ++currentPosition;
+
+                if (currentPosition < currentData.length()){
+                    vistazo = currentData.charAt(currentPosition);
+                }else {
+                    vistazo = ' ';
+                }
+
+            }while (SPECIAL_SYMBOLS.contains(vistazo));
+
+            String palabra = buffer.toString();
+            Optional<TokenType> tokenType = Optional.ofNullable(tokenClassifier.getSpecialSymbols().get(palabra));
+            Token token = new Token();
+
+            if (tokenType.isPresent()){
+                token.setTokenType(tokenType.get());
+            }else {
+                tokenType = Optional.ofNullable(tokenClassifier.getOperators().get(palabra));
+                if (tokenType.isPresent()) {
+                    token.setTokenType(tokenType.get());
+                }
+                token.setTokenType(TokenType.IDENTIFIER_OBJECT);
+            }
+
+            Lexeme lexeme = new Lexeme();
+            lexeme.setData(palabra);
+            lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
+            lexeme.setLineIndex(textLine.getLineIndex());
+
+            token.setLexeme(lexeme);
+            return token;
+        }
+
+        return null;
+
     }
 
     /**

@@ -7,6 +7,7 @@ public class TokenClassifier {
 
     private final Map<String, TokenType> keywords = new HashMap<>();
     private final Map<String, TokenType> specialSymbols = new HashMap<>();
+    private final Map<String, TokenType> operators = new HashMap<>();
 
     private void initKeywords() {
         keywords.put("class", TokenType.KW_CLASS);
@@ -41,6 +42,10 @@ public class TokenClassifier {
         specialSymbols.put(".", TokenType.SPECIAL_SYMBOL_P);
     }
 
+    private void initOperators() {
+        operators.put("=", TokenType.OPERATOR_E);
+    }
+
     public TokenClassifier() {
         initKeywords();
         initSpecialSymbols();
@@ -51,6 +56,11 @@ public class TokenClassifier {
     }
 
     public Map<String, TokenType> getSpecialSymbols() {
+
         return specialSymbols;
+    }
+
+    public Map<String, TokenType> getOperators() {
+        return operators;
     }
 }
