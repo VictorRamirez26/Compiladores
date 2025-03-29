@@ -12,7 +12,7 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
 
-        FileManager fileManager = new FileManager("C:\\Users\\Victor\\IdeaProjects\\Compilador\\prueba.txt");
+        FileManager fileManager = new FileManager(".\\prueba.txt");
         try {
             Token token = new Token();
             Lexer lexer = new Lexer(fileManager);

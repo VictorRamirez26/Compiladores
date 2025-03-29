@@ -35,11 +35,6 @@ public class Lexer {
      */
     private String currentData;
 
-    /**
-     * La columna actual en la que nos encontramos dentro de la línea.
-     */
-    private int currentColumn;
-
     private TokenClassifier tokenClassifier;
 
     /**
@@ -49,7 +44,6 @@ public class Lexer {
      */
     public Lexer(FileManager fileManager) throws FileNotFoundException {
         this.currentPosition = 0;
-        this.currentColumn = 0; // Empezamos desde la columna 0
         this.reader = fileManager;
         this.tokenClassifier = new TokenClassifier();
     }
@@ -70,16 +64,15 @@ public class Lexer {
         while (reader.hasMoreLines() || currentData != null) {
             // Si hay una línea actual y aún quedan caracteres por procesar
             if (currentData != null && currentPosition < currentData.length()) {
-                // Saltar espacios en blanco en la línea actual
+                while (currentPosition < currentData.length()) {
+                    // Saltar espacios en blanco en la línea actual
+                    if(Character.isWhitespace(currentData.charAt(currentPosition))){
+                        currentPosition++;
+                    }
+                    if (Character.isLowerCase(currentData.charAt(currentPosition))){
+                        return classifyKeywordOrIdentifier();
+                    }
 
-                if (Character.isLowerCase(currentData.charAt(currentPosition))){
-                    return classifyKeywordOrIdentifier();
-                }
-
-                while (currentPosition < currentData.length() &&
-                        Character.isWhitespace(currentData.charAt(currentPosition))) {
-                    currentPosition++;
-                    currentColumn++;
                 }
             }
 
@@ -87,7 +80,6 @@ public class Lexer {
             textLine = reader.readNextLine();
             currentData = textLine.getData();
             currentPosition = 0;
-            currentColumn = 0;
 
             // Si la línea está vacía o tiene solo espacios, se continuará en el siguiente ciclo para cargar otra línea
             if (currentData == null || currentData.trim().isEmpty()) {
@@ -158,7 +150,6 @@ public class Lexer {
                 !Character.isWhitespace(currentData.charAt(currentPosition))) {
             lexemeData.append(currentData.charAt(currentPosition));
             currentPosition++;
-            currentColumn++;
         }
 
         // Si no hemos construido un lexema válido, no lo devolvemos
@@ -170,7 +161,7 @@ public class Lexer {
         Lexeme lexeme = new Lexeme();
         lexeme.setData(lexemeData.toString());
         lexeme.setLineIndex(textLine.getLineIndex());
-        lexeme.setColumnIndex(currentColumn - lexemeData.length() + 1);
+        lexeme.setColumnIndex(currentPosition - lexemeData.length() + 1);
 
         return lexeme;
     }
