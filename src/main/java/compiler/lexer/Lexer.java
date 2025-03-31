@@ -36,10 +36,6 @@ public class Lexer {
      */
     private String currentData;
 
-    private static final Set<Character> SPECIAL_SYMBOLS = Set.of(
-            '+', '-', '*', '/', '=', '<', '>', '{', '}', '(', ')', ';', ','
-    );
-
     private TokenClassifier tokenClassifier;
 
     /**
@@ -74,7 +70,7 @@ public class Lexer {
                         currentPosition++;
                     } else if (Character.isLowerCase(currentData.charAt(currentPosition))) {
                         return classifyKeywordOrIdentifier();
-                    } else if (SPECIAL_SYMBOLS.contains(currentData.charAt(currentPosition))) {
+                    } else if (tokenClassifier.getSpecialSymbols().containsKey(currentData.charAt(currentPosition))){
                         return classifySpecialSymbol();
                         
                     } else {
@@ -145,78 +141,29 @@ public class Lexer {
 
     private Token classifySpecialSymbol() {
 
-        StringBuffer buffer = new StringBuffer();
+        String palabra = String.valueOf(currentData.charAt(currentPosition));
 
-        if (SPECIAL_SYMBOLS.contains(currentData.charAt(currentPosition))) {
-            char vistazo;
-            do {
+        Optional<TokenType> tokenType = Optional
+                .ofNullable(tokenClassifier.getSpecialSymbols()
+                        .get(currentData.charAt(currentPosition))); // Me fijo si es un simbolo especial
 
-                buffer.append(currentData.charAt(currentPosition));
-                ++currentPosition;
+        ++currentPosition; // Consumo el simbolo especial
+        Token token = new Token();
 
-                if (currentPosition < currentData.length()){
-                    vistazo = currentData.charAt(currentPosition);
-                }else {
-                    vistazo = ' ';
-                }
-
-            }while (SPECIAL_SYMBOLS.contains(vistazo));
-
-            String palabra = buffer.toString();
-            Optional<TokenType> tokenType = Optional.ofNullable(tokenClassifier.getSpecialSymbols().get(palabra));
-            Token token = new Token();
-
-            if (tokenType.isPresent()){
-                token.setTokenType(tokenType.get());
-            }else {
-                tokenType = Optional.ofNullable(tokenClassifier.getOperators().get(palabra));
-                if (tokenType.isPresent()) {
-                    token.setTokenType(tokenType.get());
-                }
-                token.setTokenType(TokenType.IDENTIFIER_OBJECT);
-            }
-
-            Lexeme lexeme = new Lexeme();
-            lexeme.setData(palabra);
-            lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
-            lexeme.setLineIndex(textLine.getLineIndex());
-
-            token.setLexeme(lexeme);
-            return token;
+        if (tokenType.isPresent()){
+            token.setTokenType(tokenType.get()); // Me quedo con el tipo de simbolo especial
+        }else {
+            token.setTokenType(TokenType.IDENTIFIER_OBJECT);
         }
 
-        return null;
-
-    }
-
-    /**
-     * Procesa un lexema simple, que es cualquier secuencia de caracteres no blanca en la línea actual.
-     *
-     * @return Un objeto {@code Lexeme} con el lexema procesado o {@code null} si no se ha procesado un lexema.
-     *
-     * @author Joaquin Ruiz
-     */
-    private Lexeme processLexeme() {
-        StringBuilder lexemeData = new StringBuilder();
-
-        // Añadir caracteres a medida que sea parte de un lexema
-        while (currentPosition < currentData.length() &&
-                !Character.isWhitespace(currentData.charAt(currentPosition))) {
-            lexemeData.append(currentData.charAt(currentPosition));
-            currentPosition++;
-        }
-
-        // Si no hemos construido un lexema válido, no lo devolvemos
-        if (lexemeData.length() == 0) {
-            return null;
-        }
-
-        // Creamos el lexema con la data, línea y columna
         Lexeme lexeme = new Lexeme();
-        lexeme.setData(lexemeData.toString());
+        lexeme.setData(palabra);
+        lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
         lexeme.setLineIndex(textLine.getLineIndex());
-        lexeme.setColumnIndex(currentPosition - lexemeData.length() + 1);
 
-        return lexeme;
+        token.setLexeme(lexeme);
+        return token;
+
     }
+
 }
