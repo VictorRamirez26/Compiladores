@@ -70,9 +70,10 @@ public class Lexer {
                         currentPosition++;
                     } else if (Character.isLowerCase(currentData.charAt(currentPosition))) {
                         return classifyKeywordOrIdentifier();
-                    } else if (tokenClassifier.getSpecialSymbols().containsKey(currentData.charAt(currentPosition))){
+                    } else if (tokenClassifier.getSpecialSymbols().containsKey(currentData.charAt(currentPosition))) {
                         return classifySpecialSymbol();
-                        
+                    } else if (tokenClassifier.getOperators().containsKey(String.valueOf(currentData.charAt(currentPosition)))){
+                        return classifyOperator();
                     } else {
                         throw new RuntimeException("No se reconoce el símbolo: " + currentData.charAt(currentPosition));
                     }
@@ -165,5 +166,40 @@ public class Lexer {
         return token;
 
     }
+
+    private Token classifyOperator(){
+
+        String operator = String.valueOf(currentData.charAt(currentPosition));
+        Token token = new Token();
+
+        if (tokenClassifier.getOperators().containsKey(operator)) {
+            if (currentPosition < currentData.length()) {
+
+                if (currentPosition + 1 < currentData.length()) {
+                    char vistazo = currentData.charAt(currentPosition + 1);
+                    if (tokenClassifier.getOperators().containsKey(operator + vistazo)) {
+                        token.setTokenType(tokenClassifier.getOperators().get(operator + vistazo));
+                        operator = operator + vistazo;
+                        ++currentPosition;
+                    }else {
+                        token.setTokenType(tokenClassifier.getOperators().get(operator));
+                    }
+                } else {
+                    token.setTokenType(tokenClassifier.getOperators().get(operator));
+                }
+
+
+            }
+        }
+        ++currentPosition;
+        Lexeme lexeme = new Lexeme();
+        lexeme.setData(operator);
+        lexeme.setColumnIndex(currentPosition - (operator.length() - 1));
+        lexeme.setLineIndex(textLine.getLineIndex());
+
+        token.setLexeme(lexeme);
+        return token;
+    }
+
 
 }

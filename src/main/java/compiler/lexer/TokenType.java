@@ -35,6 +35,8 @@ public enum TokenType {
     SPECIAL_SYMBOL_S, //Semicolon ;
     SPECIAL_SYMBOL_C, //Comma ,
     SPECIAL_SYMBOL_P, //Punto .
+    SPECIAL_SYMBOL_LB, // LEFT BRACKET [
+    SPECIAL_SYMBOL_RB, // RIGHT BRACKT ]
 
 
     OPERATOR_ASSIGN,
@@ -53,5 +55,7 @@ public enum TokenType {
     OPERATOR_OR,
     OPERATOR_NOT,
     OPERATOR_INC,
-    OPERATOR_DEC
+    OPERATOR_DEC,
+
+    UNDEFINED
 }

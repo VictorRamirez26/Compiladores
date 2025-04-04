@@ -36,11 +36,15 @@ public class TokenClassifier {
         specialSymbols.put(';', TokenType.SPECIAL_SYMBOL_S);
         specialSymbols.put(',', TokenType.SPECIAL_SYMBOL_C);
         specialSymbols.put('.', TokenType.SPECIAL_SYMBOL_P);
+        specialSymbols.put('[', TokenType.SPECIAL_SYMBOL_LB);
+        specialSymbols.put(']', TokenType.SPECIAL_SYMBOL_RB);
     }
 
     private void initOperators() {
         // Operador de asignación
         operators.put("=", TokenType.OPERATOR_ASSIGN);   // Asignación
+        operators.put("&", TokenType.UNDEFINED);
+        operators.put("|", TokenType.UNDEFINED);
 
         // Operadores aritméticos
         operators.put("+", TokenType.OPERATOR_ADD);  // Suma
