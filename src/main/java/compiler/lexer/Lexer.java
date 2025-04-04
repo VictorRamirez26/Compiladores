@@ -122,8 +122,10 @@ public class Lexer {
                         tokenType = TokenType.DOUBLE_CONSTANT;
                     } else if (vistazo == 'e' && state == 2) {
                         state = 3;
-                    } else if ((vistazo == '+' || vistazo == '-') && state == 3){
-                        state = 4;
+                    } else if ((vistazo == '+' || vistazo == '-') && state == 3) {
+                        state =4;
+                    } else if ((Character.isDigit(vistazo) && state == 3)) { // Caso especial 12.42e10
+                        state = 5;
                     } else if (Character.isDigit(vistazo) && state == 4) {
                         state = 5;
                     }else if (!Character.isDigit(vistazo)){
