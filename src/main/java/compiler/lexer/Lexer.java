@@ -72,8 +72,10 @@ public class Lexer {
                         return classifyKeywordOrIdentifier();
                     } else if (tokenClassifier.getSpecialSymbols().containsKey(currentData.charAt(currentPosition))) {
                         return classifySpecialSymbol();
-                    } else if (tokenClassifier.getOperators().containsKey(String.valueOf(currentData.charAt(currentPosition)))){
+                    } else if (tokenClassifier.getOperators().containsKey(String.valueOf(currentData.charAt(currentPosition)))) {
                         return classifyOperator();
+                    } else if (Character.isDigit(currentData.charAt(currentPosition))) {
+                        return classifyNumbers();
                     } else {
                         throw new RuntimeException("No se reconoce el símbolo: " + currentData.charAt(currentPosition));
                     }
@@ -98,6 +100,62 @@ public class Lexer {
         return null;
     }
 
+    private Token classifyNumbers(){
+
+        StringBuffer buffer = new StringBuffer();
+        TokenType tokenType = TokenType.INT_CONSTANT;
+        int state = 0; // State 0: int, State 1: int + . , State 2: int + . + int, State 3: double + e ,
+                        // State 4: double + e + {+,-} , State 5: double + e + {+,-} + int
+        if(Character.isDigit(currentData.charAt(currentPosition))){
+            char vistazo;
+            do {
+                buffer.append(currentData.charAt(currentPosition));
+                ++currentPosition;
+
+                if (currentPosition < currentData.length()){
+                    vistazo = currentData.charAt(currentPosition);
+
+                    if (vistazo == '.' && state == 0) {
+                        state = 1;
+                    } else if (Character.isDigit(vistazo) && state == 1) {
+                        state = 2;
+                        tokenType = TokenType.DOUBLE_CONSTANT;
+                    } else if (vistazo == 'e' && state == 2) {
+                        state = 3;
+                    } else if ((vistazo == '+' || vistazo == '-') && state == 3){
+                        state = 4;
+                    } else if (Character.isDigit(vistazo) && state == 4) {
+                        state = 5;
+                    }else if (!Character.isDigit(vistazo)){
+                        tokenType = TokenType.UNDEFINED;
+                        break;
+                    }
+
+                }else {
+                    vistazo = ' ';
+                }
+
+            } while (Character.isDigit(vistazo) || vistazo == '.' || vistazo == 'e'
+                    || vistazo == '+' || vistazo == '-');
+
+            if (state == 1 || state == 3 || state == 4){
+                tokenType = TokenType.UNDEFINED;
+            }
+            String number = buffer.toString();
+            Token token = new Token();
+            token.setTokenType(tokenType);
+
+            Lexeme lexeme = new Lexeme();
+            lexeme.setData(number);
+            lexeme.setColumnIndex(currentPosition - (number.length() - 1));
+            lexeme.setLineIndex(textLine.getLineIndex());
+
+            token.setLexeme(lexeme);
+            return token;
+
+        }
+        return null;
+    }
 
     private Token classifyKeywordOrIdentifier(){
 
@@ -116,7 +174,7 @@ public class Lexer {
                     vistazo = ' ';
                 }
 
-            }while (Character.isLetterOrDigit(vistazo));
+            } while (Character.isLetterOrDigit(vistazo));
 
             String palabra = buffer.toString();
             Optional<TokenType> tokenType = Optional.ofNullable(tokenClassifier.getKeywords().get(palabra));
