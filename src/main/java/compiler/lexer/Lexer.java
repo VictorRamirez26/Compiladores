@@ -70,6 +70,8 @@ public class Lexer {
                         currentPosition++;
                     } else if (Character.isLowerCase(currentData.charAt(currentPosition))) {
                         return classifyKeywordOrIdentifier();
+                    } else if (Character.isUpperCase(currentData.charAt(currentPosition))) {
+                        return classifyClassIdentifier();
                     } else if (tokenClassifier.getSpecialSymbols().containsKey(currentData.charAt(currentPosition))) {
                         return classifySpecialSymbol();
                     } else if (tokenClassifier.getOperators().containsKey(String.valueOf(currentData.charAt(currentPosition)))) {
@@ -98,6 +100,38 @@ public class Lexer {
 
         // Si no hay más lexemas, devolvemos null
         return null;
+    }
+
+    private Token classifyClassIdentifier(){
+
+        StringBuffer buffer = new StringBuffer();
+        TokenType tokenType = TokenType.IDENTIFIER_CLASS;
+
+        char vistazo;
+        do {
+
+            buffer.append(currentData.charAt(currentPosition));
+            ++currentPosition;
+
+            if (currentPosition < currentData.length()){
+                vistazo = currentData.charAt(currentPosition);
+            }else {
+                vistazo = ' ';
+            }
+
+        } while (Character.isLetter(vistazo));
+
+        String palabra = buffer.toString();
+        Token token = new Token();
+        token.setTokenType(tokenType);
+
+        Lexeme lexeme = new Lexeme();
+        lexeme.setData(palabra);
+        lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
+        lexeme.setLineIndex(textLine.getLineIndex());
+
+        token.setLexeme(lexeme);
+        return token;
     }
 
     private Token classifyNumbers(){
@@ -129,7 +163,6 @@ public class Lexer {
                     } else if (Character.isDigit(vistazo) && state == 4) {
                         state = 5;
                     }else if (!Character.isDigit(vistazo)){
-                        tokenType = TokenType.UNDEFINED;
                         break;
                     }
 
@@ -163,41 +196,38 @@ public class Lexer {
 
         StringBuffer buffer = new StringBuffer();
 
-        if (Character.isLowerCase(currentData.charAt(currentPosition))) {
-            char vistazo;
-            do {
+        char vistazo;
+        do {
 
-                buffer.append(currentData.charAt(currentPosition));
-                ++currentPosition;
+            buffer.append(currentData.charAt(currentPosition));
+            ++currentPosition;
 
-                if (currentPosition < currentData.length()){
-                    vistazo = currentData.charAt(currentPosition);
-                }else {
-                    vistazo = ' ';
-                }
-
-            } while (Character.isLetterOrDigit(vistazo));
-
-            String palabra = buffer.toString();
-            Optional<TokenType> tokenType = Optional.ofNullable(tokenClassifier.getKeywords().get(palabra));
-            Token token = new Token();
-
-            if (tokenType.isPresent()){
-                token.setTokenType(tokenType.get());
+            if (currentPosition < currentData.length()){
+                vistazo = currentData.charAt(currentPosition);
             }else {
-                token.setTokenType(TokenType.IDENTIFIER_OBJECT);
+                vistazo = ' ';
             }
 
-            Lexeme lexeme = new Lexeme();
-            lexeme.setData(palabra);
-            lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
-            lexeme.setLineIndex(textLine.getLineIndex());
+        } while (Character.isLetterOrDigit(vistazo) || vistazo == '_');
 
-            token.setLexeme(lexeme);
-            return token;
+        String palabra = buffer.toString();
+        Optional<TokenType> tokenType = Optional.ofNullable(tokenClassifier.getKeywords().get(palabra));
+        Token token = new Token();
+
+        if (tokenType.isPresent()){
+            token.setTokenType(tokenType.get());
+        }else {
+            token.setTokenType(TokenType.IDENTIFIER_OBJECT);
         }
 
-        return null;
+        Lexeme lexeme = new Lexeme();
+        lexeme.setData(palabra);
+        lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
+        lexeme.setLineIndex(textLine.getLineIndex());
+
+        token.setLexeme(lexeme);
+        return token;
+
     }
 
     private Token classifySpecialSymbol() {
