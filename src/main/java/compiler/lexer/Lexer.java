@@ -71,10 +71,11 @@ public class Lexer {
                         currentPosition++;
                     } else if (currentData.charAt(currentPosition) == '/') {
                         Optional<Token> tokenOptional = Optional.ofNullable(commentOrDiv());
-                        if (tokenOptional.isPresent()){
+                        if (tokenOptional.isPresent()) {
                             return tokenOptional.get();
                         }
-
+                    } else if (currentData.charAt(currentPosition) == '"') {
+                        return classifyString();
                     } else if (Character.isLowerCase(currentData.charAt(currentPosition))) {
                         return classifyKeywordOrIdentifier();
                     } else if (Character.isUpperCase(currentData.charAt(currentPosition))) {
@@ -108,6 +109,61 @@ public class Lexer {
         // Si no hay más lexemas, devolvemos null
         return null;
     }
+
+    private Token classifyString() throws LexerException {
+
+        int string_size = 0;
+        StringBuffer buffer = new StringBuffer();
+        currentPosition++; // Consumo la primer comilla
+        boolean fin_cadena = false;
+
+        while (currentPosition < currentData.length()){
+            char c = currentData.charAt(currentPosition); // Caracter actual
+            if (c == '"'){
+                fin_cadena = true;
+                currentPosition++; // Consumo la ultima comilla
+                break;
+            }
+
+            // Me fijo que la cadena no tenga el null '\0'
+            if (currentData.charAt(currentPosition) == '\\') {
+                if (currentPosition + 1 < currentData.length() &&
+                        currentData.charAt(currentPosition + 1) == '0') {
+
+                    throw new LexerException("La cadena contiene un carácter nulo \\0 no permitido.");
+                }
+            }
+
+            if (string_size >= 1024){
+                throw new LexerException("El tamaño del String debe tener menos de 1024 caracteres.");
+            }
+
+            buffer.append(c);
+            currentPosition++;
+            string_size++;
+
+        }
+
+        if (!fin_cadena){
+           throw new LexerException("Se esperaba el fin de la cadena.");
+        }
+
+        String palabra = buffer.toString();
+        Token token = new Token();
+        token.setTokenType(TokenType.STRING_CONSTANT);
+
+        Lexeme lexeme = new Lexeme();
+        lexeme.setData(palabra);
+        lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
+        lexeme.setLineIndex(textLine.getLineIndex());
+
+        token.setLexeme(lexeme);
+        return token;
+
+    }
+
+
+
     private Token commentOrDiv() throws IOException {
 
         if(currentPosition + 1 < currentData.length()){

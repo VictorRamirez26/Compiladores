@@ -6,6 +6,6 @@ public class LexerException extends Exception{
     }
 
     public LexerException(String mensaje) {
-        super(mensaje);
+        super("Error: "+ mensaje);
     }
 }
