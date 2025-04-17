@@ -19,7 +19,7 @@ public class Main {
             while ((token = lexer.getToken()) != null){
                 System.out.println(token.toString());
             }
-        }catch (IOException e){
+        }catch (Exception e){
             e.printStackTrace();
         }
 

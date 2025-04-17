@@ -1,5 +1,6 @@
 package compiler.lexer;
 
+import compiler.exceptions.LexerException;
 import compiler.reader.FileManager;
 import compiler.reader.Text;
 
@@ -58,7 +59,7 @@ public class Lexer {
      *
      * @author Joaquin Ruiz
      */
-    public Token getToken() throws IOException {
+    public Token getToken() throws IOException, LexerException {
 
         // Este ciclo seguirá hasta que no haya más líneas
         while (reader.hasMoreLines() || currentData != null) {
@@ -68,6 +69,12 @@ public class Lexer {
                     // Saltar espacios en blanco en la línea actual
                     if (Character.isWhitespace(currentData.charAt(currentPosition))) {
                         currentPosition++;
+                    } else if (currentData.charAt(currentPosition) == '/') {
+                        Optional<Token> tokenOptional = Optional.ofNullable(commentOrDiv());
+                        if (tokenOptional.isPresent()){
+                            return tokenOptional.get();
+                        }
+
                     } else if (Character.isLowerCase(currentData.charAt(currentPosition))) {
                         return classifyKeywordOrIdentifier();
                     } else if (Character.isUpperCase(currentData.charAt(currentPosition))) {
@@ -79,7 +86,7 @@ public class Lexer {
                     } else if (Character.isDigit(currentData.charAt(currentPosition))) {
                         return classifyNumbers();
                     } else {
-                        throw new RuntimeException("No se reconoce el símbolo: " + currentData.charAt(currentPosition));
+                        throw new LexerException("No se reconoce el símbolo: " + currentData.charAt(currentPosition));
                     }
                 }
             }
@@ -100,6 +107,49 @@ public class Lexer {
 
         // Si no hay más lexemas, devolvemos null
         return null;
+    }
+    private Token commentOrDiv() throws IOException {
+
+        if(currentPosition + 1 < currentData.length()){
+            if (currentData.charAt(currentPosition + 1) == '*'){
+                currentPosition++;
+                multiComment();
+            }else if (currentData.charAt(currentPosition + 1) == '/'){
+                currentPosition++;
+                simpleComment();
+            }else {
+                return classifyOperator();
+            }
+        }else {
+            return classifyOperator();
+        }
+        return null;
+    }
+
+    private void simpleComment(){
+        while (currentPosition < currentData.length()){
+            currentPosition++;
+        }
+    }
+
+    private void multiComment() throws IOException {
+        do {
+            if (currentPosition + 1 < currentData.length()){
+                if (currentData.charAt(currentPosition) == '*'
+                        && currentData.charAt(currentPosition + 1) == '/'){
+                    currentPosition = currentPosition + 2;
+                    break;
+                }else {
+                    currentPosition++;
+                }
+
+            } else {
+                // Cargar la siguiente línea del archivo
+                textLine = reader.readNextLine();
+                currentData = textLine.getData();
+                currentPosition = 0;
+            }
+        }while (currentPosition < currentData.length());
     }
 
     private Token classifyClassIdentifier(){
