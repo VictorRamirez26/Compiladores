@@ -148,21 +148,8 @@ public class Lexer {
            throw new LexerException("Se esperaba el fin de la cadena.");
         }
 
-        String palabra = buffer.toString();
-        Token token = new Token();
-        token.setTokenType(TokenType.STRING_CONSTANT);
-
-        Lexeme lexeme = new Lexeme();
-        lexeme.setData(palabra);
-        lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
-        lexeme.setLineIndex(textLine.getLineIndex());
-
-        token.setLexeme(lexeme);
-        return token;
-
+        return generateToken(buffer.toString(), currentPosition, textLine.getLineIndex(), TokenType.STRING_CONSTANT);
     }
-
-
 
     private Token commentOrDiv() throws IOException {
 
@@ -227,17 +214,7 @@ public class Lexer {
 
         } while (Character.isLetter(vistazo));
 
-        String palabra = buffer.toString();
-        Token token = new Token();
-        token.setTokenType(tokenType);
-
-        Lexeme lexeme = new Lexeme();
-        lexeme.setData(palabra);
-        lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
-        lexeme.setLineIndex(textLine.getLineIndex());
-
-        token.setLexeme(lexeme);
-        return token;
+        return generateToken(buffer.toString(), currentPosition, textLine.getLineIndex(), tokenType);
     }
 
     private Token classifyNumbers(){
@@ -282,17 +259,8 @@ public class Lexer {
             if (state == 1 || state == 3 || state == 4){
                 tokenType = TokenType.UNDEFINED;
             }
-            String number = buffer.toString();
-            Token token = new Token();
-            token.setTokenType(tokenType);
 
-            Lexeme lexeme = new Lexeme();
-            lexeme.setData(number);
-            lexeme.setColumnIndex(currentPosition - (number.length() - 1));
-            lexeme.setLineIndex(textLine.getLineIndex());
-
-            token.setLexeme(lexeme);
-            return token;
+            return generateToken(buffer.toString(), currentPosition, textLine.getLineIndex(), tokenType);
 
         }
         return null;
@@ -317,22 +285,10 @@ public class Lexer {
         } while (Character.isLetterOrDigit(vistazo) || vistazo == '_');
 
         String palabra = buffer.toString();
+
         Optional<TokenType> tokenType = Optional.ofNullable(tokenClassifier.getKeywords().get(palabra));
-        Token token = new Token();
 
-        if (tokenType.isPresent()){
-            token.setTokenType(tokenType.get());
-        }else {
-            token.setTokenType(TokenType.IDENTIFIER_OBJECT);
-        }
-
-        Lexeme lexeme = new Lexeme();
-        lexeme.setData(palabra);
-        lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
-        lexeme.setLineIndex(textLine.getLineIndex());
-
-        token.setLexeme(lexeme);
-        return token;
+        return generateToken(palabra, currentPosition, textLine.getLineIndex(), tokenType.orElse(TokenType.IDENTIFIER_OBJECT));
 
     }
 
