@@ -344,29 +344,14 @@ public class Lexer {
                 .ofNullable(tokenClassifier.getSpecialSymbols()
                         .get(currentData.charAt(currentPosition))); // Me fijo si es un simbolo especial
 
-        ++currentPosition; // Consumo el simbolo especial
-        Token token = new Token();
-
-        if (tokenType.isPresent()){
-            token.setTokenType(tokenType.get()); // Me quedo con el tipo de simbolo especial
-        }else {
-            token.setTokenType(TokenType.IDENTIFIER_OBJECT);
-        }
-
-        Lexeme lexeme = new Lexeme();
-        lexeme.setData(palabra);
-        lexeme.setColumnIndex(currentPosition - (palabra.length() - 1));
-        lexeme.setLineIndex(textLine.getLineIndex());
-
-        token.setLexeme(lexeme);
-        return token;
-
+        return generateToken(palabra, ++currentPosition, textLine.getLineIndex(), tokenType.orElse(TokenType.IDENTIFIER_OBJECT));
     }
 
     private Token classifyOperator(){
 
         String operator = String.valueOf(currentData.charAt(currentPosition));
-        Token token = new Token();
+        TokenType tokenType = null;
+        //Token token = new Token();
 
         if (tokenClassifier.getOperators().containsKey(operator)) {
             if (currentPosition < currentData.length()) {
@@ -374,28 +359,36 @@ public class Lexer {
                 if (currentPosition + 1 < currentData.length()) {
                     char vistazo = currentData.charAt(currentPosition + 1);
                     if (tokenClassifier.getOperators().containsKey(operator + vistazo)) {
-                        token.setTokenType(tokenClassifier.getOperators().get(operator + vistazo));
+                        tokenType = tokenClassifier.getOperators().get(operator + vistazo);
                         operator = operator + vistazo;
                         ++currentPosition;
                     }else {
-                        token.setTokenType(tokenClassifier.getOperators().get(operator));
+                        tokenType = tokenClassifier.getOperators().get(operator);
                     }
                 } else {
-                    token.setTokenType(tokenClassifier.getOperators().get(operator));
+                    tokenType = tokenClassifier.getOperators().get(operator);
                 }
 
 
             }
         }
-        ++currentPosition;
-        Lexeme lexeme = new Lexeme();
-        lexeme.setData(operator);
-        lexeme.setColumnIndex(currentPosition - (operator.length() - 1));
-        lexeme.setLineIndex(textLine.getLineIndex());
 
-        token.setLexeme(lexeme);
-        return token;
+        return generateToken(operator, ++currentPosition, textLine.getLineIndex(), tokenType);
+
     }
 
+    public Token generateToken(String data, int currentPosition, int lineIndex, TokenType tokenType){
+
+        Token token = new Token();
+        Lexeme lexeme = new Lexeme();
+        lexeme.setData(data);
+        lexeme.setColumnIndex(currentPosition - (data.length() - 1));
+        lexeme.setLineIndex(lineIndex);
+
+        token.setTokenType(tokenType);
+        token.setLexeme(lexeme);
+
+        return token;
+    }
 
 }
