@@ -1,0 +1,16 @@
+class
+if
+impl
+else
+false
+fn
+ret
+while
+true
+new
+nil
+st
+start
+self
+pub
+div

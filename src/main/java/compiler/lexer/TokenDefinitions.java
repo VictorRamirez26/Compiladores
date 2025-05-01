@@ -3,7 +3,7 @@ package compiler.lexer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TokenClassifier {
+public class TokenDefinitions {
 
     private final Map<String, TokenType> keywords = new HashMap<>();
     private final Map<Character, TokenType> specialSymbols = new HashMap<>();
@@ -72,7 +72,7 @@ public class TokenClassifier {
 
     }
 
-    public TokenClassifier() {
+    public TokenDefinitions() {
         initKeywords();
         initSpecialSymbols();
         initOperators();
