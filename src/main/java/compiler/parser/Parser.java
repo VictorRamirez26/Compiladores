@@ -180,12 +180,12 @@ public class Parser {
     }
 
     /*
-        ⟨OpUnario⟩ ::= ++ | + | -- | - | ! | (int)
+        ⟨OpIgual⟩ ::= == | !=
      */
-    private void opUnario() throws ParserException, IOException, LexerException {
-        String[] primerosOpUnario = new String[] {"++", "+", "--", "-", "!", "("};
-        if(!match(primerosOpUnario)){
-            throw new ParserException("Se esperaba un operador unario: " + primerosOpUnario.toString());
+    private void opIgual() throws IOException, LexerException, ParserException {
+        String[] primerosOpIgual = new String[] {"==", "!="};
+        if(!match(primerosOpIgual)){
+            throw new ParserException("Se esperaba un operador de igualdad: " + primerosOpIgual.toString());
         }
     }
 
@@ -200,12 +200,42 @@ public class Parser {
     }
 
     /*
+        ⟨OpAd⟩ ::= + | -
+     */
+    private void opAd() throws IOException, LexerException, ParserException {
+        String[] primerosOpAd = new String[] {"+", "-"};
+        if(!match(primerosOpAd)){
+            throw new ParserException("Se esperaba un operador de suma: " + primerosOpAd.toString());
+        }
+    }
+
+    /*
+        ⟨OpUnario⟩ ::= ++ | + | -- | - | ! | (int)
+     */
+    private void opUnario() throws ParserException, IOException, LexerException {
+        String[] primerosOpUnario = new String[] {"++", "+", "--", "-", "!", "("};
+        if(!match(primerosOpUnario)){
+            throw new ParserException("Se esperaba un operador unario: " + primerosOpUnario.toString());
+        }
+    }
+
+    /*
         ⟨OpMul⟩ ::= * | / | % | div
      */
     private void opMul() throws ParserException, IOException, LexerException {
         String[] primerosOpMul = new String[] {"*", "/", "%", "div"};
         if(!match(primerosOpMul)){
             throw new ParserException("Se esperaba un operador de multiplicación: " + primerosOpMul.toString());
+        }
+    }
+
+    /*
+        ⟨Literal⟩ ::= nil | true | false | intLiteral | StrLiteral | doubleLiteral
+     */
+    private void literal() throws ParserException, IOException, LexerException {
+        String[] primerosLiteral = new String[] {"nil", "true", "false", "intLiteral", "StrLiteral", "doubleLiteral"};
+        if(!match(primerosLiteral)){
+            throw new ParserException("Se esperaba un literal: " + primerosLiteral.toString());
         }
     }
 
