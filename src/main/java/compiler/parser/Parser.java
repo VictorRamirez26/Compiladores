@@ -133,6 +133,53 @@ public class Parser {
     }
 
     /*
+        ⟨Herencia⟩ ::= : ⟨Tipo⟩
+     */
+    private void herencia() throws ParserException, IOException, LexerException {
+        if(!match(":")) {
+            throw new ParserException("Se esperaba \" : \"");
+        }
+        tipo();
+    }
+
+    /*
+        ⟨TipoMétodo⟩ ::=  ⟨Tipo⟩ | void
+     */
+    private void tipoMétodo() throws ParserException, IOException, LexerException {
+        String[] primerosTipo = new String[] {"idClass", "Array"};
+        if(check(primerosTipo)){
+            tipo();
+        } else if (!match("void")) {
+            throw new ParserException("Se esperaba un tipo de método: " + primerosTipo.toString() +
+                    " " + "void");
+        }
+    }
+
+    /*
+        ⟨Tipo⟩ ::= ⟨TipoPrimitivo⟩ | idClass | Array ⟨TipoPrimitivo⟩
+     */
+    private void tipo() throws ParserException, IOException, LexerException {
+        String[] primerosTipoPrimitivo = new String[] {"Str", "Bool", "Int", "Double"};
+        String[] primerosTipo = new String[] {"idClass", "Array"};
+        if(check(primerosTipoPrimitivo)){
+            tipoPrimitivo();
+        } else if(!match(primerosTipo)) {
+            throw new ParserException("Se esperaba un tipo: " + primerosTipo.toString() +
+                    " " + primerosTipoPrimitivo.toString());
+        }
+    }
+
+    /*
+        ⟨TipoPrimitivo⟩ ::= Str | Bool | Int | Double
+     */
+    private void tipoPrimitivo() throws ParserException, IOException, LexerException {
+        String[] primerosTipoPrimitivo = new String[] {"Str", "Bool", "Int", "Double"};
+        if(!match(primerosTipoPrimitivo)){
+            throw new ParserException("Se esperaba un tipo primitivo: " + primerosTipoPrimitivo.toString());
+        }
+    }
+
+    /*
         ⟨OpUnario⟩ ::= ++ | + | -- | - | ! | (int)
      */
     private void opUnario() throws ParserException, IOException, LexerException {
