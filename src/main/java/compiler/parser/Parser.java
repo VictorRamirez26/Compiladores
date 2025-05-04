@@ -4,6 +4,7 @@ import compiler.exceptions.LexerException;
 import compiler.exceptions.ParserException;
 import compiler.lexer.Lexer;
 import compiler.lexer.Token;
+import compiler.lexer.TokenType;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,11 +23,30 @@ public class Parser {
         return match;
     }
 
+    private boolean match(TokenType... tokenType) throws IOException, LexerException {
+        boolean match = check(tokenType);
+        if (match) {
+            nextToken();
+        }
+        return match;
+    }
+
     private boolean check(String... lexemas) {
         String actual = currentToken.getLexeme().getData();
         boolean matched = false;
         for (String lexema : lexemas) {
             if (actual.equals(lexema)) {
+                matched = true;
+            }
+        }
+        return matched;
+    }
+
+    private boolean check(TokenType... tokenTypes) {
+        TokenType actual = currentToken.getTokenType();
+        boolean matched = false;
+        for (TokenType tokenType : tokenTypes) {
+            if (actual.equals(tokenType)) {
                 matched = true;
             }
         }
@@ -50,22 +70,25 @@ public class Parser {
      */
     private void program() throws ParserException, IOException, LexerException {
         listaDefiniciones();
-        // te fijas si viene class o impl
-        // llamo a Start
+        //start();
     }
 
     /*
         ⟨Start⟩ ::= start ⟨BloqueMétodo⟩
      */
+    private void start() throws IOException, LexerException {
+        match("start");
+        //bloqueMetodo();
+    }
 
     /*
         ⟨ListaDefiniciones⟩ ::= ⟨Class⟩ ⟨ListaDefiniciones⟩ | ⟨Impl⟩ ⟨ListaDefiniciones⟩ | λ
      */
     private void listaDefiniciones() throws ParserException, IOException, LexerException {
-        if(match("class")){
-            //llamo a class
-        } else if (match("impl")) {
-            //llamo a impl
+        if(check("class")){
+            //class();
+        } else if (check("impl")) {
+            //impl();
         } else if (check("start")){
             // CASO LAMBDA
         } else {
@@ -77,22 +100,36 @@ public class Parser {
         ⟨Class⟩ ::= class idClass ⟨ClassF⟩
      */
     private void classRegla() throws ParserException, IOException, LexerException {
-        if(!match("class")){
-            throw new ParserException("Se esperaba class");
-        }
+        match("class");
+        match(TokenType.IDENTIFIER_CLASS);
+        //classF();
     }
 
     /*
         ⟨ClassF⟩ ::= {⟨Atributo⟩} | ⟨Herencia⟩ {⟨Atributo⟩}
      */
+    private void classF() throws IOException, LexerException {
+        if (match("{")) {
+            //atributo();
+            match("}");
+        }else {
+            //herencia();
+            match("{");
+            //atributo();
+            match("}");
+        }
+
+    }
 
     /*
         ⟨Impl⟩ ::= impl idClass {⟨Miembro⟩}
      */
     private void impl() throws ParserException, IOException, LexerException {
-        if(!match("impl")){
-            throw new ParserException("Se esperaba impl");
-        }
+        match("impl");
+        match(TokenType.IDENTIFIER_CLASS);
+        match("{");
+        //miembro();
+        match("}");
     }
 
     /*
