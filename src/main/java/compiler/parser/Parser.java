@@ -86,9 +86,9 @@ public class Parser {
      */
     private void listaDefiniciones() throws ParserException, IOException, LexerException {
         if(check("class")){
-            //class();
+            classRegla();
         } else if (check("impl")) {
-            //impl();
+            impl();
         } else if (check("start")){
             // CASO LAMBDA
         } else {
@@ -102,20 +102,20 @@ public class Parser {
     private void classRegla() throws ParserException, IOException, LexerException {
         match("class");
         match(TokenType.IDENTIFIER_CLASS);
-        //classF();
+        classF();
     }
 
     /*
         ⟨ClassF⟩ ::= {⟨Atributo⟩} | ⟨Herencia⟩ {⟨Atributo⟩}
      */
-    private void classF() throws IOException, LexerException {
+    private void classF() throws IOException, LexerException, ParserException {
         if (match("{")) {
-            //atributo();
+            atributo();
             match("}");
         }else {
-            //herencia();
+            herencia();
             match("{");
-            //atributo();
+            atributo();
             match("}");
         }
 
@@ -143,11 +143,11 @@ public class Parser {
     }
 
     /*
-        ⟨TipoMétodo⟩ ::=  ⟨Tipo⟩ | void
+        ⟨TipoMetodo⟩ ::=  ⟨Tipo⟩ | void
      */
-    private void tipoMétodo() throws ParserException, IOException, LexerException {
-        String[] primerosTipo = new String[] {"idClass", "Array"};
-        if(check(primerosTipo)){
+    private void tipoMetodo() throws ParserException, IOException, LexerException {
+        String[] primerosTipo = new String[] {"Array","Str", "Bool", "Int", "Double"};
+        if(check(primerosTipo) || check(TokenType.IDENTIFIER_CLASS)){
             tipo();
         } else if (!match("void")) {
             throw new ParserException("Se esperaba un tipo de método: " + primerosTipo.toString() +
@@ -160,12 +160,13 @@ public class Parser {
      */
     private void tipo() throws ParserException, IOException, LexerException {
         String[] primerosTipoPrimitivo = new String[] {"Str", "Bool", "Int", "Double"};
-        String[] primerosTipo = new String[] {"idClass", "Array"};
+        String[] primerosTipo = new String[] {"Array"};
         if(check(primerosTipoPrimitivo)){
             tipoPrimitivo();
-        } else if(!match(primerosTipo)) {
-            throw new ParserException("Se esperaba un tipo: " + primerosTipo.toString() +
-                    " " + primerosTipoPrimitivo.toString());
+        } else if(match(primerosTipo)) {
+            tipoPrimitivo();
+        } else if (!match(TokenType.IDENTIFIER_CLASS)) {
+            throw new ParserException("Se esperaba un tipo: " + TokenType.IDENTIFIER_CLASS);
         }
     }
 
@@ -176,6 +177,109 @@ public class Parser {
         String[] primerosTipoPrimitivo = new String[] {"Str", "Bool", "Int", "Double"};
         if(!match(primerosTipoPrimitivo)){
             throw new ParserException("Se esperaba un tipo primitivo: " + primerosTipoPrimitivo.toString());
+        }
+    }
+
+    /*
+        ⟨Atributo⟩ ::= <Visibilidad> <Tipo> <ListaDeclaracionVariables> ; <Atributo>
+                    | <Tipo> <ListaDeclaraciónVariables> ; <Atributo>
+                    | λ
+     */
+    private void atributo() throws IOException, LexerException, ParserException {
+        String[] primerosVisibilidad = new String[] {"pub"};
+        String[] primerosTipo = new String[] {"Array", "Str", "Bool", "Int", "Double"};
+        if (check(primerosVisibilidad)){
+            visibilidad();
+            tipo();
+            listaDeclaracionVariables();
+            match(";");
+            atributo();
+        } else if (check(primerosTipo) || check(TokenType.IDENTIFIER_CLASS)) {
+            tipo();
+            listaDeclaracionVariables();
+            match(";");
+            atributo();
+        } else if (check(TokenType.SPECIAL_SYMBOL_RCB)) {
+            // Caso lambda
+        }else {
+            throw new ParserException("Se esperaba 'pub' o un tipo de dato");
+        }
+    }
+
+    /*
+        ⟨Visibilidad⟩ ::= pub
+    */
+    private void visibilidad() throws IOException, LexerException {
+        match("pub");
+    }
+
+    /*
+        ⟨ListaDeclaracionVariables⟩ ::= idMetAt <ListaDeclaracionVariablesF>
+     */
+    private void listaDeclaracionVariables() throws IOException, LexerException, ParserException {
+        match(TokenType.IDENTIFIER_OBJECT);
+        listaDeclaracionVariablesF();
+    }
+
+    /*
+    ⟨ListaDeclaracionVariablesF⟩ ::= , <ListaDeclaraciónVariables>
+                                    | λ
+    */
+    private void listaDeclaracionVariablesF() throws IOException, LexerException, ParserException {
+        if (match(",")){
+            listaDeclaracionVariables();
+        } else if (check(TokenType.SPECIAL_SYMBOL_S)) {
+            // Caso de lambda
+        }else {
+            throw new ParserException("Se esperaba una ','");
+        }
+    }
+
+    /*
+    ⟨Miembro⟩ ::= <Metodo> <MiembroF1>
+                | <Constructor> <MiembroF1>
+    */
+    private void miembro() throws ParserException {
+        String[] primerosMetodo = new String[] {"fn","st"};
+        String[] primerosConstructor = new String[] {"."};
+        if (check(primerosMetodo)){
+            //metodo();
+        } else if (check(primerosConstructor)) {
+            //constructor();
+        }else {
+            throw new ParserException("Se esperaba 'fn' , 'st' o '.'");
+        }
+    }
+
+    /*
+   ⟨Metodo⟩ ::= fn <MetodoF1>
+               | <FormaMetodo> fn <MetodoF1>
+   */
+
+    private void metodo() throws IOException, LexerException {
+        if (match("fn")){
+            //metodoF1();
+        } else{
+            //formaMetodo();
+            match("fn");
+            //metodoF1();
+        }
+    }
+
+    /*
+   ⟨MetodoF1⟩ ::=  idMetAt <ArgumentosFormales> <BloqueMetodo>
+               | <TipoMetodo> idMetAt <ArgumentosFormales> <BloqueMetodo>
+   */
+
+    private void metodoF1() throws IOException, LexerException, ParserException {
+        if (match(TokenType.IDENTIFIER_OBJECT)){
+            //argumentosFormales();
+            //bloqueMetodo();
+        }else {
+            tipoMetodo();
+            match(TokenType.IDENTIFIER_OBJECT);
+            //argumentosFormales();
+            //bloqueMetodo();
         }
     }
 
