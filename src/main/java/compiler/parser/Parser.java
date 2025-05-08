@@ -338,6 +338,68 @@ public class Parser {
     }
 
     /*
+    ⟨BloqueMetodo⟩ ::= { <DeclVarLocales> <BloqueMetodoF>
+                    | {<SentenciaRec>}
+                    | {}
+    */
+    private void bloqueMetodo() throws IOException, LexerException, ParserException {
+        String[] primerosDeclVarLocales = new String[] {"Array", "Str", "Bool", "Int", "Double"};
+        String[] primerosSentenciaRec = new String[] {";" , "if","while","ret","self","(","{"};
+        match("{");
+        if (check(primerosDeclVarLocales) || check(TokenType.IDENTIFIER_CLASS)){
+            declVarLocales();
+            bloqueMetodoF();
+        } else if (check(primerosSentenciaRec) || check(TokenType.IDENTIFIER_OBJECT)) {
+            //sentenciaRec();
+            match("}");
+        } else if (!match("}")) {
+            throw new ParserException("Se esperaba '}'");
+        }
+    }
+
+    /*
+    ⟨BloqueMetodoF⟩ ::= <SentenciaRec> }
+                    | }
+    */
+    private void bloqueMetodoF() throws IOException, LexerException {
+        String[] primerosSentenciaRec = new String[] {";" , "if","while","ret","self","(","{"};
+        if (check(primerosSentenciaRec) || check(TokenType.IDENTIFIER_OBJECT)){
+            //sentenciaRec();
+        }
+        match("}");
+    }
+
+    /*
+    ⟨DeclVarLocales⟩ ::= <Tipo> <ListaDeclaracionVariables> ; <DeclVarLocalesF>
+    */
+
+    private void declVarLocales() throws IOException, LexerException, ParserException {
+        tipo();
+        listaDeclaracionVariables();
+        match(";");
+        declVarLocalesF();
+    }
+
+    /*
+    ⟨DeclVarLocalesF⟩ ::= <DeclVarLocales>
+                        | λ
+    */
+
+    private void declVarLocalesF() throws IOException, LexerException, ParserException {
+
+        String[] primerosDeclVarLocales = new String[] {"Array", "Str", "Bool", "Int", "Double"};
+        String[] siguientesDeclVarLocalesF = new String[] {";" , "if","while","ret","self","(","}"};
+
+        if (check(primerosDeclVarLocales) || check(TokenType.IDENTIFIER_CLASS)) {
+            declVarLocales();
+        }else if (check(siguientesDeclVarLocalesF) || check(TokenType.IDENTIFIER_OBJECT)){
+            // Caso lambda
+        }else {
+            throw new ParserException();
+        }
+    }
+
+    /*
         ⟨OpIgual⟩ ::= == | !=
      */
     private void opIgual() throws IOException, LexerException, ParserException {
