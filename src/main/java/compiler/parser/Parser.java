@@ -188,22 +188,26 @@ public class Parser {
     private void atributo() throws IOException, LexerException, ParserException {
         String[] primerosVisibilidad = new String[] {"pub"};
         String[] primerosTipo = new String[] {"Array", "Str", "Bool", "Int", "Double"};
+
+        if (check(TokenType.SPECIAL_SYMBOL_RCB)){
+            return;
+        }
+
         if (check(primerosVisibilidad)){
             visibilidad();
             tipo();
             listaDeclaracionVariables();
             match(";");
-            atributo();
         } else if (check(primerosTipo) || check(TokenType.IDENTIFIER_CLASS)) {
             tipo();
             listaDeclaracionVariables();
             match(";");
-            atributo();
-        } else if (check(TokenType.SPECIAL_SYMBOL_RCB)) {
-            // Caso lambda
         }else {
             throw new ParserException("Se esperaba 'pub' o un tipo de dato");
         }
+
+        atributo();
+
     }
 
     /*
@@ -273,14 +277,64 @@ public class Parser {
 
     private void metodoF1() throws IOException, LexerException, ParserException {
         if (match(TokenType.IDENTIFIER_OBJECT)){
-            //argumentosFormales();
+            argumentosFormales();
             //bloqueMetodo();
         }else {
             tipoMetodo();
             match(TokenType.IDENTIFIER_OBJECT);
-            //argumentosFormales();
+            argumentosFormales();
             //bloqueMetodo();
         }
+    }
+
+    /*
+   ⟨ArgumentosFormales⟩ ::=  ( <ArgumentosFormalesF>
+   */
+    private void argumentosFormales() throws IOException, LexerException, ParserException {
+        match("(");
+        argumentosFormalesF();
+    }
+
+    /*
+    ⟨ArgumentosFormalesF⟩ ::= <ListaArgumentosFormales> )
+                            | )
+    */
+    private void argumentosFormalesF() throws IOException, LexerException, ParserException {
+        String[] primerosListaArgumentosFormales = new String[] {"Array", "Str", "Bool", "Int", "Double"};
+        if (check(primerosListaArgumentosFormales) || check(TokenType.IDENTIFIER_CLASS)){
+            listaArgumentosFormales();
+        }
+        match(")");
+    }
+
+    /*
+        ⟨ListaArgumentosFormales⟩ ::= <ArgumentoFormal> <ListaArgumentosFormalesF>
+    */
+    private void listaArgumentosFormales() throws IOException, LexerException, ParserException {
+        argumentoFormal();
+        listaArgumentosFormalesF();
+    }
+
+    /*
+    ⟨ListaArgumentosFormalesF⟩ ::= , <ListaArgumentosFormales>
+                                | λ
+    */
+    private void listaArgumentosFormalesF() throws IOException, LexerException, ParserException {
+        if (match(",")){
+            listaArgumentosFormales();
+        } else if (check(")")) {
+            // Caso lambda
+        }else {
+            throw new ParserException("Se esperaba una ','");
+        }
+    }
+
+    /*
+        ⟨ArgumentoFormal⟩ ::= <Tipo> idMetAt
+    */
+    private void argumentoFormal() throws IOException, LexerException, ParserException {
+        tipo();
+        match(TokenType.IDENTIFIER_OBJECT);
     }
 
     /*
