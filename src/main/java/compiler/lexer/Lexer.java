@@ -6,6 +6,8 @@ import compiler.reader.Text;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -105,6 +107,21 @@ public class Lexer {
 
         // Si no hay más lexemas, devolvemos null
         return null;
+    }
+
+    public List<Token> getAllTokens() throws LexerException {
+        List<Token> tokenList = new ArrayList<>();
+        Token token;
+
+        try {
+            while ((token = getToken()) != null){
+                tokenList.add(token);
+                System.out.println(token.toString());
+            }
+            return tokenList;
+        } catch (Exception e) {
+            throw new LexerException(e.getMessage());
+        }
     }
 
     public void incrementPosition(){

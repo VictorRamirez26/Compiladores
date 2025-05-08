@@ -28,17 +28,10 @@ public class LexerTest {
 
     @Test
     public void testAssignment() throws LexerException, FileNotFoundException {
-        List<Token> tokenList = new ArrayList<>();
+
         iniciarArchivo(".\\tests\\asignacion.txt");
 
-        try {
-            while ((token = lexer.getToken()) != null){
-                tokenList.add(token);
-                System.out.println(token.toString());
-            }
-        } catch (Exception e) {
-            throw new LexerException(e.getMessage());
-        }
+        List<Token> tokenList = lexer.getAllTokens();
 
         assertTrue(tokenList.size() >= 4, "Se esperaban al menos 4 tokens");
 
@@ -66,16 +59,8 @@ public class LexerTest {
 
     @Test
     public void testNumbers() throws LexerException, FileNotFoundException {
-        List<Token> tokenList = new ArrayList<>();
         iniciarArchivo(".\\tests\\numeros.txt");
-        try {
-            while ((token = lexer.getToken()) != null){
-                tokenList.add(token);
-                System.out.println(token.toString());
-            }
-        } catch (Exception e) {
-            throw new LexerException(e.getMessage());
-        }
+        List<Token> tokenList = lexer.getAllTokens();
 
         assertTrue(tokenList.size() >= 6, "Se esperaban al menos 6 tokens");
 
@@ -101,16 +86,8 @@ public class LexerTest {
 
     @Test
     public void testComments() throws LexerException, FileNotFoundException {
-        List<Token> tokenList = new ArrayList<>();
         iniciarArchivo(".\\tests\\comentarios.txt");
-        try {
-            while ((token = lexer.getToken()) != null){
-                tokenList.add(token);
-                System.out.println(token.toString());
-            }
-        } catch (Exception e) {
-            throw new LexerException(e.getMessage());
-        }
+        List<Token> tokenList = lexer.getAllTokens();
 
         assertTrue(tokenList.isEmpty(), "No se esperaba ningún Token.");
 
@@ -120,11 +97,7 @@ public class LexerTest {
     public void testKeywords() throws LexerException, IOException {
         iniciarArchivo(".\\tests\\keywords.txt");
 
-        List<Token> tokenList = new ArrayList<>();
-        while ((token = lexer.getToken()) != null){
-            tokenList.add(token);
-            System.out.println(token.toString());
-        }
+        List<Token> tokenList = lexer.getAllTokens();
 
         List<TokenType> expectedTypes = List.of(
                 TokenType.KW_CLASS, TokenType.KW_IF, TokenType.KW_IMPL, TokenType.KW_ELSE,
