@@ -87,8 +87,10 @@ public class Parser {
     private void listaDefiniciones() throws ParserException, IOException, LexerException {
         if(check("class")){
             classRegla();
+            listaDefiniciones();
         } else if (check("impl")) {
             impl();
+            listaDefiniciones();
         } else if (check("start")){
             // CASO LAMBDA
         } else {
@@ -400,6 +402,22 @@ public class Parser {
     }
 
     /*
+        ⟨ExpUn⟩ ::= ⟨OpUnario⟩ ⟨ExpUn⟩ | ⟨Operando⟩
+     */
+    private void expUn() throws ParserException, IOException, LexerException {
+        String[] primerosOpUnario = new String[]  {"++", "+", "--", "-", "!", "("};
+        String[] primerosOperando = new String[] {"nil", "true", "false", "intLiteral", "StrLiteral", "doubleLiteral", "(", "self", "id", "idclass", "new"};
+        if(check(primerosOpUnario)){
+            opUnario();
+            expUn();
+        } else if(check(primerosOperando)) {
+            operando();
+        } else {
+            throw new ParserException("Se esperaba " + primerosOpUnario.toString() + " " + primerosOperando.toString());
+        }
+    }
+
+    /*
         ⟨OpIgual⟩ ::= == | !=
      */
     private void opIgual() throws IOException, LexerException, ParserException {
@@ -450,6 +468,37 @@ public class Parser {
     }
 
     /*
+        ⟨Operando⟩ ::= ⟨Literal⟩ | ⟨Primario⟩ ⟨OperandoF⟩
+     */
+    private void operando() throws IOException, LexerException, ParserException {
+        String[] primerosLiteral = new String[] {"nil", "true", "false", "intLiteral", "StrLiteral", "doubleLiteral"};
+        String[] primerosPrimario = new String[] {"(", "self", "id", "idclass", "new"};
+        if(match(primerosLiteral)) {
+            literal();
+        } else if (match(primerosPrimario)) {
+            //primario()
+            //operandoF()
+        } else {
+            throw new ParserException("Se esperaba un operando: " + primerosPrimario.toString() + " " + primerosLiteral.toString());
+        }
+    }
+
+    /*
+        ⟨OperandoF⟩ ::= λ | ⟨Encadenado⟩
+     */
+    private void operandoF() throws IOException, LexerException, ParserException {
+        String[] primerosEncadenado = new String[] {"."};
+        String[] siguientesOperandoF = new String[] {"*", "/", "%", "div", "+", "-", "<=", "<", ">=", ">", "==", "!=", "&&", "||", ")" , ";" , "]", ","};
+        if(match(primerosEncadenado)){
+            //encadenado()
+        } else if (check(siguientesOperandoF)) {
+            //CASO LAMBDA
+        } else {
+            throw new ParserException("Se esperaba : " + primerosEncadenado.toString() + " " + siguientesOperandoF.toString());
+        }
+    }
+
+    /*
         ⟨Literal⟩ ::= nil | true | false | intLiteral | StrLiteral | doubleLiteral
      */
     private void literal() throws ParserException, IOException, LexerException {
@@ -459,6 +508,33 @@ public class Parser {
         }
     }
 
+    /*
+        ⟨Encadenado⟩ ::= . ⟨EncadenadoF⟩
+     */
+    private void encadenado() throws IOException, LexerException, ParserException {
+        if(!match(".")){
+            throw new ParserException("Se esperaba \".\"");
+        }
+        encadenadoF();
+
+    }
+
+    /*
+        ⟨EncadenadoF⟩ ::= ⟨LlamadaMétodoEncadenado⟩ | ⟨AccesoVariableEncadenado⟩
+     */
+    private void encadenadoF() throws ParserException {
+        String[] primerosLlamadaMetodoEncadenado = new String[] {"."};
+        String[] primerosAccesoVariableEncadenado = new String[] {"id"};
+
+        if(check(primerosLlamadaMetodoEncadenado)) {
+            //llamadaMétodoEncadenado()
+        } else if (check(currentToken.getTokenType())) {
+            //accesoVariableEncadenado
+        } else {
+            throw new ParserException("Se esperaba \".\" o identificador de objeto");
+        }
+
+    }
 }
 
 
