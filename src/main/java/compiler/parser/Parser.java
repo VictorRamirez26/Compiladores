@@ -471,11 +471,13 @@ public class Parser {
         ⟨Operando⟩ ::= ⟨Literal⟩ | ⟨Primario⟩ ⟨OperandoF⟩
      */
     private void operando() throws IOException, LexerException, ParserException {
-        String[] primerosLiteral = new String[] {"nil", "true", "false", "intLiteral", "StrLiteral", "doubleLiteral"};
-        String[] primerosPrimario = new String[] {"(", "self", "id", "idclass", "new"};
-        if(match(primerosLiteral)) {
+        String[] primerosLiteral = new String[] {"nil", "true", "false"};
+        TokenType[] primerosLiteralTokenType = new TokenType[] {TokenType.INT_CONSTANT , TokenType.STRING_CONSTANT , TokenType.DOUBLE_CONSTANT};
+        String[] primerosPrimario = new String[] {"(", "self", "new"};
+
+        if(check(primerosLiteral) || check(primerosLiteralTokenType)) {
             literal();
-        } else if (match(primerosPrimario)) {
+        } else if (check(primerosPrimario) || check(TokenType.IDENTIFIER_CLASS , TokenType.IDENTIFIER_OBJECT)) {
             //primario()
             //operandoF()
         } else {
@@ -489,7 +491,7 @@ public class Parser {
     private void operandoF() throws IOException, LexerException, ParserException {
         String[] primerosEncadenado = new String[] {"."};
         String[] siguientesOperandoF = new String[] {"*", "/", "%", "div", "+", "-", "<=", "<", ">=", ">", "==", "!=", "&&", "||", ")" , ";" , "]", ","};
-        if(match(primerosEncadenado)){
+        if(check(primerosEncadenado)){
             //encadenado()
         } else if (check(siguientesOperandoF)) {
             //CASO LAMBDA
@@ -502,9 +504,11 @@ public class Parser {
         ⟨Literal⟩ ::= nil | true | false | intLiteral | StrLiteral | doubleLiteral
      */
     private void literal() throws ParserException, IOException, LexerException {
-        String[] primerosLiteral = new String[] {"nil", "true", "false", "intLiteral", "StrLiteral", "doubleLiteral"};
-        if(!match(primerosLiteral)){
-            throw new ParserException("Se esperaba un literal: " + primerosLiteral.toString());
+        String[] primerosLiteralString = new String[] {"nil", "true", "false"};
+        TokenType[] primerosLiteralTokenType = new TokenType[] {TokenType.INT_CONSTANT , TokenType.STRING_CONSTANT , TokenType.DOUBLE_CONSTANT};
+        if(!match(primerosLiteralString) || !match(primerosLiteralTokenType)){
+            throw new ParserException("Se esperaba un literal: " + primerosLiteralString.toString()
+                    + primerosLiteralTokenType.toString());
         }
     }
 
@@ -524,7 +528,6 @@ public class Parser {
      */
     private void encadenadoF() throws ParserException {
         String[] primerosLlamadaMetodoEncadenado = new String[] {"."};
-        String[] primerosAccesoVariableEncadenado = new String[] {"id"};
 
         if(check(primerosLlamadaMetodoEncadenado)) {
             //llamadaMétodoEncadenado()
